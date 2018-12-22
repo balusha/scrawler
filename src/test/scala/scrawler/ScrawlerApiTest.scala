@@ -7,14 +7,15 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.{Matchers, WordSpec}
 
 
-class ScrawlerApiTest extends WordSpec with Matchers {
+class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
   val route: Route = (new ScrawlerApiImpl).route
 
   "The scrawler" should {
     "return answer \"pong\" on GET \"ping\" request" in {
       Get(Uri("/ping")) ~> route ~> check {
-        //entityAs[String]
-        true shouldEqual true
+        val response = entityAs[String]
+        println(s"Got response: $response")
+        response shouldEqual "pong"
       }
     }
   }
