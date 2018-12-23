@@ -16,4 +16,5 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser" % circeVersion,
   "io.circe" %% "circe-generic-extras" % circeVersion,
   "de.heikoseeberger" %% "akka-http-circe" % "1.22.0",
+  "org.jsoup" % "jsoup" % "1.11.3"
 )
