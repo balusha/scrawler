@@ -2,9 +2,9 @@ package scrawler
 
 import akka.http.scaladsl.Http
 import akka.actor.ActorSystem
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-
+import scrawler.model._
+import scala.collection.concurrent.TrieMap
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success}
 
@@ -14,7 +14,8 @@ object Scrawler extends App {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
-  lazy val scrawlerApi: ScrawlerApi = new ScrawlerApiImpl()
+  val storage  = new ResultsStorageImpl()
+  val scrawlerApi: ScrawlerApi = new ScrawlerApiImpl(storage)
 
   Http()
     .bindAndHandle(scrawlerApi.route, interface = "localhost", port = 8080)
