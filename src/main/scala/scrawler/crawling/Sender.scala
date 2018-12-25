@@ -14,7 +14,9 @@ trait Getter {
               (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer): Future[String]
 }
 
-class GetterImpl extends Getter {
+class GetterImpl()
+                (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) extends Getter {
+
   def getTitle(uri: Uri)
               (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) = {
     Http()
