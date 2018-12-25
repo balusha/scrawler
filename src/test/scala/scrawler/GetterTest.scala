@@ -40,7 +40,16 @@ class GetterTest extends FreeSpec{
 
         val uri = Uri("http://yandex.ru")
         val gotTitle = Await.result(getter.getTitle(uri), 15 seconds)
-        val needTitle = "Yandex"
+        val needTitle = "Яндекс"
+
+        assert(gotTitle == needTitle)
+      }
+
+      "vk.com from vk.com" in {
+
+        val uri = Uri("http://vk.com")
+        val gotTitle = Await.result(getter.getTitle(uri), 15 minutes)
+        val needTitle = "vk.com"
 
         assert(gotTitle == needTitle)
       }
