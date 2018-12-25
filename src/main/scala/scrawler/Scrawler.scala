@@ -4,7 +4,6 @@ import akka.http.scaladsl.Http
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import scrawler.model._
-import scala.collection.concurrent.TrieMap
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success}
 
