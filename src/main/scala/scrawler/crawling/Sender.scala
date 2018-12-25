@@ -1,9 +1,9 @@
 package scrawler.crawling
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, Uri}
-import akka.http.scaladsl.unmarshalling.{PredefinedFromEntityUnmarshallers, Unmarshal}
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.Materializer
 import org.jsoup.Jsoup
 
@@ -19,16 +19,39 @@ class GetterImpl extends Getter {
               (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) = {
     Http()
       .singleRequest(HttpRequest(uri = uri))
-      .flatMap{ resp =>
-        val i = Unmarshal(resp.entity).to[String]
-        i.map {
-          html =>
-            Jsoup.parse(html)
-              .head()
-              .getElementsByTag("title")
-              .first()
-              .text()
+      .flatMap { resp =>
+        resp match {
+        case resp@HttpResponse(StatusCodes.Redirection(_), headers, _, _) => {
+          headers.find {
+            header =>
+              header.name() == "RedirectTo"
+          }.map{
+            header =>
+              Http()
+                .singleRequest(HttpRequest(uri = Uri(header.value())))
+                .flatMap {
+                  case resp =>
+                    val i = Unmarshal(resp.entity).to[String]
+                    i.map {
+                      html =>
+                        Jsoup.parse(html)
+                          .head()
+                          .getElementsByTag("title")
+                          .first()
+                          .text()
+                    }
+                }
+          }.getOrElse(Future.successful("Smthng wnt wrng :(")) }
+        case resp =>
+          val i = Unmarshal(resp.entity).to[String]
+          i.map {
+            html =>
+              Jsoup.parse(html)
+                .head()
+                .getElementsByTag("title")
+                .first()
+                .text()
         }
       }
-  }
+  }}
 }
