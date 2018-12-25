@@ -6,7 +6,6 @@ import akka.stream.Materializer
 import scrawler.crawling.GetterImpl
 
 import scala.collection.concurrent.TrieMap
-import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
@@ -24,6 +23,7 @@ class ResultsStorageImpl()
                         (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) extends ResultsStorage {
 
   private val getter = new GetterImpl
+  private val storage = new TrieMap[CrawlingId, CrawlingResult]
 
   private val getNextId: () => CrawlingId = {
     val random = new Random(123L)
@@ -41,8 +41,6 @@ class ResultsStorageImpl()
       storage(id) = result.map { case (uri, title) => uri -> Some(Right(title))} //TODO need "left" scenario handling
     }
   }
-
-  val storage = new TrieMap[CrawlingId, CrawlingResult]
 
   def getResult(id: CrawlingId): Option[CrawlingResult] = {
     storage.get(id)

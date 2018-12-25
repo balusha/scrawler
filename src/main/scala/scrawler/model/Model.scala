@@ -6,10 +6,11 @@ import akka.http.scaladsl.model._
 import akka.util.ByteString
 
 sealed trait CrawlingError
+case object NoSuchCrawlingRequest extends CrawlingError
 
 case class CrawlingId(value: Long) extends AnyVal
-object CrawlingId {
+//object CrawlingId {
+//
+//}
 
-}
-
-case class CrawlingResult(result: Map[Uri, Either[CrawlingError, String]])
+//case class CrawlingResult(result: Map[Uri, Either[CrawlingError, String]])

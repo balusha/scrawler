@@ -1,4 +1,4 @@
-package scrawler
+package scrawler.routing
 
 import akka.http.scaladsl.server.Route
 

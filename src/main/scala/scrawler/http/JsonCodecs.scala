@@ -1,12 +1,9 @@
 package scrawler.http
 
-import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
-import akka.http.scaladsl.model.HttpEntity.Strict
+import akka.http.scaladsl.model.Uri
 import io.circe._
-import io.circe.syntax._
 import io.circe.generic.extras.semiauto._
-import akka.http.scaladsl.model.{ContentTypes, Uri}
-import akka.util.ByteString
+import io.circe.syntax._
 import scrawler.model._
 
 object JsonCodecs {

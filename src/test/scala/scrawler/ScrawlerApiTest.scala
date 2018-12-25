@@ -3,8 +3,11 @@ package scrawler
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.{Matchers, WordSpec}
-import scrawler.http.NewCrawlingRequest
+import scrawler.http.{NewCrawlingRequest, CrawlingResultResponse}
 import scrawler.model.ResultsStorageImpl
+import scrawler.routing.ScrawlerApiImpl
+
+import scala.concurrent.Await
 
 
 class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
@@ -32,6 +35,19 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
       Post(Uri("/crawlingrequests"), reqEntity) ~> route ~> check {
         val response = (entityAs[String]).toLong
         response shouldEqual 12345L
+      }
+    }
+
+    "return ticket results by getting ticketid" in {
+
+     val ticketId = storage.register(
+        Seq(Uri("http://google.com"),
+            Uri("http://yandex.com"),
+            Uri("http://yandex.com"),
+            Uri("http://google.com")))
+
+      Get(Uri(s"crawlingrequests/${ticketId.value}")) ~> route ~> check {
+        val response = entityAs[CrawlingResultResponse]
       }
     }
 

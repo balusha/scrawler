@@ -1,26 +1,29 @@
 package scrawler
 
-import akka.http.scaladsl.Http
 import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import scrawler.model._
+
+import scrawler.model.ResultsStorageImpl
+import scrawler.routing.ScrawlerApiImpl
+
 import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success}
 
-object Scrawler extends App {
+object SCrawler extends App {
 
-  implicit val system: ActorSystem = ActorSystem("ScrawlerServer")
+  implicit val system: ActorSystem = ActorSystem("SCrawlerServer")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val storage  = new ResultsStorageImpl()
-  val scrawlerApi: ScrawlerApi = new ScrawlerApiImpl(storage)
+  val storage     = new ResultsStorageImpl()
+  val scrawlerApi = new ScrawlerApiImpl(storage)
 
   Http()
     .bindAndHandle(scrawlerApi.route, interface = "localhost", port = 8080)
     .onComplete {
       case Success(binding) =>
-        println(s"Worker API is listening on $binding")
+        println(s"Simple crawler is ready and waiting on ${binding.localAddress}")
         sys.addShutdownHook {
           println("Received shutdown hook")
           try {
