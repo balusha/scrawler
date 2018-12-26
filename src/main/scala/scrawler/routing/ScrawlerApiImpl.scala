@@ -53,7 +53,7 @@ class ScrawlerApiImpl(
                   new CrawlingResultResponse(crawlingId, crawlingResult)
                 }
                 //case None => reject(ValidationRejection)
-                case None => reject
+                case None => complete { "WTF" }//reject //TODO there must be a way to explain rejection
               }
           }
         }

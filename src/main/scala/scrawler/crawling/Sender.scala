@@ -8,10 +8,13 @@ import akka.stream.Materializer
 import org.jsoup.Jsoup
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
+
+import scrawler.model.ParsingError
 
 trait Getter {
   def getTitle(uri: Uri)
-              (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer): Future[String]
+              (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer): Future[Either[ParsingError.type, String]]
 }
 
 class GetterImpl()
@@ -19,38 +22,45 @@ class GetterImpl()
 
   def getTitle(uri: Uri)
               (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) = {
-    Http()
-      .singleRequest(HttpRequest(uri = uri))
-      .flatMap { resp =>
-        resp match {
-        case resp@HttpResponse(StatusCodes.Redirection(_), headers, _, _) => {
-          headers.find(_.name()=="Location").map{
-            header =>
-              Http()
-                .singleRequest(HttpRequest(uri = header.value()))
-                .flatMap {
-                  case resp =>
-                    val ent = resp.entity
-                    val i = Unmarshal(ent).to[String]
-                    i.map {
-                      html =>
-                        Option(Jsoup.parse(html).getElementsByTag("head").first())
-                          .flatMap(head => Option(head.getElementsByTag("title").first()))
-                          .map(title => title.text())
-                          .getOrElse("There is no head\\title tag")
-                    }
-                }
-          }.getOrElse(Future.successful("Smthng wnt wrng :(")) }
-        case resp =>
-          val i = Unmarshal(resp.entity).to[String]
-          i.map {
-            html =>
-              Jsoup.parse(html)
-                .head()
-                .getElementsByTag("title")
-                .first()
-                .text()
+    getResponseFromUri(uri).flatMap {
+      case Left(err) => Future.successful(Left(err))
+      case Right(response) => extractTitleFromResponse(response)
+    }
+  }
+
+  private def extractTitleFromResponse(resp: HttpResponse)= {
+    val ent = resp.entity
+    val i = Unmarshal(ent).to[String]
+    i.map {
+      html =>
+        Option(Jsoup.parse(html).getElementsByTag("head").first())
+          .flatMap(head => Option(head.getElementsByTag("title").first()))
+          .map(title => Right(title.text()))
+          .getOrElse(Left(ParsingError))
+    }
+  }
+
+  private def getResponseFromUri(uri: Uri): Future[Either[ParsingError.type,HttpResponse]] = {
+    Http().singleRequest(HttpRequest(uri = uri)).flatMap {
+      case resp@HttpResponse(StatusCodes.Redirection(_), headers, _, _) =>
+        extractUriToRedirect(resp) match {
+          case Left(err) => Future.successful(Left(err))
+          case Right(uri) => getResponseFromUri(uri)
         }
+      case resp => Future.successful(Right(resp))
+    }
+  }
+
+  private def extractUriToRedirect(resp: HttpResponse) =
+    resp.headers.find(_.name()=="Location").map{
+    header =>
+      Try {
+        val headerContent = header.value()
+        Uri(headerContent)
+      } match {
+        case Success(uri) => Right(uri)
+        case Failure(exception) => Left(ParsingError)
       }
-  }}
+    }.getOrElse(Left(ParsingError))
+
 }

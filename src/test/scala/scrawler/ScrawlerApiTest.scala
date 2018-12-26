@@ -51,7 +51,7 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
             Uri("http://yandex.com"),
             Uri("http://google.com")))
 
-      Thread.sleep(1000)
+      Thread.sleep(10000)
 
       Get(Uri(s"/crawlingrequests/${ticketId.value}")) ~> route ~> check {
         val response = entityAs[CrawlingResultResponse]

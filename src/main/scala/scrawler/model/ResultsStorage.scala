@@ -29,18 +29,7 @@ class ResultsStorageImpl()
   private val getNextId: () => CrawlingId = {
     val random = new Random(123L)
     ()=>{
-      CrawlingId(random.nextLong())
-      CrawlingId(12345)
-    }
-  }
-
-  private def runCrawling(id: CrawlingId) = {
-    Future.sequence {
-     for {
-       (uri,_) <- storage(id) // TODO this can explode (use get method)
-      } yield getter.getTitle(uri).map(uri -> _)
-    }.map { result =>
-      storage(id) = result.map { case (uri, title) => uri -> Some(Right(title))} //TODO need "left" scenario handling
+      CrawlingId(math.abs(random.nextLong()))
     }
   }
 
@@ -53,7 +42,17 @@ class ResultsStorageImpl()
     val startingValue: CrawlingResultPart = None
     val results = Seq(uris.map(_-> startingValue):_*)
     storage += (id -> results)
-    runCrawling(id)
+
+    Future.sequence {
+      for {
+        (uri, _) <- results
+      } yield getter.getTitle(uri).map(uri -> _)
+    }.map { result =>
+      storage(id) = result.map {
+        case (uri, res) => uri -> Some(res)
+      }
+    }
+
     id
   }
 

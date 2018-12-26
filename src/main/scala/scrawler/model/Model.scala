@@ -7,6 +7,7 @@ import akka.util.ByteString
 
 sealed trait CrawlingError
 case object NoSuchCrawlingRequest extends CrawlingError
+case object ParsingError extends CrawlingError
 
 case class CrawlingId(value: Long) extends AnyVal
 //object CrawlingId {
