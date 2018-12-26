@@ -38,6 +38,8 @@ class RequestStorageTest extends FreeSpec{
         (uri, result) <- resultMap
       } println(s"$uri: $result")
 
+      //TODO finish this test
+
     }
   }
 }

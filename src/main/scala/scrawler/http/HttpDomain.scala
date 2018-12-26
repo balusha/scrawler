@@ -1,49 +1,37 @@
 package scrawler.http
 
-import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
-import akka.http.scaladsl.model.HttpEntity._
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, MessageEntity, Uri}
-import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
-import akka.util.ByteString
-import io.circe.generic.semiauto
-import io.circe.{Encoder, KeyDecoder, KeyEncoder}
-import scrawler.model.CrawlingId
+import akka.http.scaladsl.model.Uri
+import scrawler.model.{CrawlingError, CrawlingId}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scrawler.http.CrawlingResultResponse.CrawlingResult
 
 case class NewCrawlingRequest(urls: Seq[Uri])
 
-object NewCrawlingRequest {
+case class NewCrawlingResponse(id: CrawlingId)
 
-  implicit def byteString2String(string: String): ByteString = ByteString(string)
-
-  implicit val crawlingRequestUnmarshaller: FromEntityUnmarshaller[NewCrawlingRequest] = {
-
-    def fromHttpEntity2NewCrawlingRequest(httpEntity: HttpEntity): NewCrawlingRequest = {
-      new NewCrawlingRequest(Nil)
+class CrawlingResultResponse(val id: CrawlingId, crawlingResults: CrawlingResult) {
+  val results = crawlingResults.map { case (url, res) =>
+      url -> (res match {
+        case None => "Parsing in progress"
+        case Some(Left(err)) => "Crawling error" // TODO interpolate err description
+        case Some(Right(value)) => value
+      })
     }
 
-    def f(ec: ExecutionContext): HttpEntity => Future[NewCrawlingRequest] = {
-      httpEntity: HttpEntity => Future {
-        fromHttpEntity2NewCrawlingRequest(httpEntity)
-      }(ec)
-    }
-
-    Unmarshaller(f)
-  }
-
-  implicit val crawlingRequestMarshaller: ToEntityMarshaller[NewCrawlingRequest] = {
-    def marshal(obj: NewCrawlingRequest): MessageEntity = {
-      new Strict(
-        contentType = ContentTypes.`application/json`,
-        data = "123"
-      )
-    }
-    Marshaller.opaque(marshal)
-  }
+  override def toString() = s"CrawlingResultResponse(id:$id results:$results)"
 
 }
 
-case class NewCrawlingResponse(id: CrawlingId)
+object CrawlingResultResponse{
+  type CrawlingResult = Seq[(Uri, CrawlingResultPart)]
+  type CrawlingResultPart = Option[Either[CrawlingError, String]]
+}
 
-case class CrawlingResultResponse(id: CrawlingId, results: Map[Uri, String])
+trait EndpointError {
+  def message: String
+}
+
+object EndpointError {
+  case class InternalServerError(message: String) extends EndpointError
+  case class ParsingError(message: String) extends EndpointError
+}

@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.Uri
 import akka.stream.Materializer
 import scrawler.crawling.GetterImpl
 
+import scala.Option
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
@@ -29,6 +30,7 @@ class ResultsStorageImpl()
     val random = new Random(123L)
     ()=>{
       CrawlingId(random.nextLong())
+      CrawlingId(12345)
     }
   }
 

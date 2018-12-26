@@ -1,18 +1,23 @@
 package scrawler
 
+import scala.concurrent.duration._
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.{Matchers, WordSpec}
-import scrawler.http.{NewCrawlingRequest, CrawlingResultResponse}
-import scrawler.model.ResultsStorageImpl
+import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest}
+import scrawler.model.{CrawlingId, ResultsStorageImpl}
 import scrawler.routing.ScrawlerApiImpl
+import scrawler.http.JsonCodecs.Encoders._
+import scrawler.http.JsonCodecs.Decoders._
+import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
 import scala.concurrent.Await
 
 
 class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
   val storage = new ResultsStorageImpl()
-  val route = (new ScrawlerApiImpl(storage)).route
+  val scrApi = new ScrawlerApiImpl(storage)
+  val route = scrApi.route
 
   "The scrawler" should {
     "return answer \"pong\" on GET \"ping\" request" in {
@@ -26,15 +31,15 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
     "return ticket id by getting urls list" in {
       val reqEntity = NewCrawlingRequest(
         List(
-          "http://google.com",
-          "http://yandex.com",
-          "http://yandex.com",
-          "http://google.com"
+          Uri("http://google.com"),
+          Uri("http://yandex.com"),
+          Uri("http://yandex.com"),
+          Uri("http://google.com")
         )
       )
       Post(Uri("/crawlingrequests"), reqEntity) ~> route ~> check {
-        val response = (entityAs[String]).toLong
-        response shouldEqual 12345L
+        val response = (entityAs[CrawlingId])
+        response shouldEqual CrawlingId(-5106534569952410475L) // TODO finish this test with comparsion with real value
       }
     }
 
@@ -46,8 +51,11 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
             Uri("http://yandex.com"),
             Uri("http://google.com")))
 
-      Get(Uri(s"crawlingrequests/${ticketId.value}")) ~> route ~> check {
+      Thread.sleep(1000)
+
+      Get(Uri(s"/crawlingrequests/${ticketId.value}")) ~> route ~> check {
         val response = entityAs[CrawlingResultResponse]
+        response shouldEqual 3
       }
     }
 

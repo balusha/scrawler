@@ -82,11 +82,11 @@ class JsonCodecsTest extends FreeSpec{
         val value = new CrawlingResultResponse(
           new CrawlingId(123456),
           List(
-            Uri("http://some.test.url")                   -> "ololo",
-            Uri("http://another.test.url")                -> "trololo",
-            Uri("https://ololo.pyshpysh.ru/popyachso/11") -> "pyshpysh",
-            Uri("https://pots.zoxvachjen.ru")             -> "popyachso"
-          ) toMap
+            Uri("http://some.test.url")                   -> Some(Right("ololo")),
+            Uri("http://another.test.url")                -> Some(Right("trololo")),
+            Uri("https://ololo.pyshpysh.ru/popyachso/11") -> Some(Right("pyshpysh")),
+            Uri("https://pots.zoxvachjen.ru")             -> Some(Right("popyachso"))
+          )
         )
 
         assert(
