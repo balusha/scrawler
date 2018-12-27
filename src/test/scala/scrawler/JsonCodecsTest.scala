@@ -6,9 +6,9 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import org.scalatest.FreeSpec
+//import scrawler.http.EndpointError.ParsingError
 import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest, NewCrawlingResponse}
-import scrawler.model.CrawlingId
-
+import scrawler.model.{CrawlingId, ParsingError}
 import scrawler.http.JsonCodecs.Decoders._
 import scrawler.http.JsonCodecs.Encoders._
 
@@ -68,24 +68,45 @@ class JsonCodecsTest extends FreeSpec{
       "should be encoded correctly" in {
         val json =
           """
-            |{
-            |	"id": 123456,
-            |	"results": [
-            |		{"url":"http://some.test.url", "result": "ololo"},
-            |		{"url":"http://another.test.url", "result": "trololo"},
-            |		{"url":"https://ololo.pyshpysh.ru/popyachso/11", "result": "pyshpysh"},
-            |		{"url":"https://pots.zoxvachjen.ru", "result": "popyachso"}
-            |	]
-            |}
+            {
+             |  "id": 123456,
+             |  "attempts": [
+             |    {
+             |      "url": "http://some.test.url",
+             |      "result": {
+             |        "Succeed": {
+             |          "status": "ok",
+             |          "title": "ololo"
+             |        }
+             |      }
+             |    },
+             |    {
+             |      "url": "http://another.test.url",
+             |      "result": {
+             |        "Failed": {
+             |          "status": "error",
+             |          "description": {"ParsingError": "parsing error"}
+             |        }
+             |      }
+             |    },
+             |    {
+             |      "url": "https://ololo.pyshpysh.ru/popyachso/11",
+             |      "result": {
+             |        "InProgress": {
+             |          "status": "pending"
+             |        }
+             |      }
+             |    }
+             |  ]
+             |}
           """.stripMargin
 
         val value = new CrawlingResultResponse(
           new CrawlingId(123456),
-          List(
+          Seq(
             Uri("http://some.test.url")                   -> Some(Right("ololo")),
-            Uri("http://another.test.url")                -> Some(Right("trololo")),
-            Uri("https://ololo.pyshpysh.ru/popyachso/11") -> Some(Right("pyshpysh")),
-            Uri("https://pots.zoxvachjen.ru")             -> Some(Right("popyachso"))
+            Uri("http://another.test.url")                -> Some(Left(ParsingError)),
+            Uri("https://ololo.pyshpysh.ru/popyachso/11") -> None
           )
         )
 

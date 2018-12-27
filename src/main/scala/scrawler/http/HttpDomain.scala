@@ -36,7 +36,7 @@ trait EndpointError {
 
 object EndpointError {
   case class InternalServerError(message: String) extends EndpointError
-  case class ParsingError(message: String) extends EndpointError
+//  case class ParsingError(message: String) extends EndpointError
 }
 
 case class CrawlingResultResponse(id: CrawlingId, attempts: Seq[CrawlingAttempt])

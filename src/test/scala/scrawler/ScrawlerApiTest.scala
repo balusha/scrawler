@@ -38,8 +38,10 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
         )
       )
       Post(Uri("/crawlingrequests"), reqEntity) ~> route ~> check {
-        val response = (entityAs[CrawlingId])
-        response shouldEqual CrawlingId(-5106534569952410475L) // TODO finish this test with comparsion with real value
+        assert(entityAs[CrawlingId] match {
+          case CrawlingId(id:Long) => true
+          case _ => false
+        })
       }
     }
 
@@ -51,11 +53,10 @@ class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
             Uri("http://yandex.com"),
             Uri("http://google.com")))
 
-      Thread.sleep(10000)
+      Thread.sleep(5000)
 
       Get(Uri(s"/crawlingrequests/${ticketId.value}")) ~> route ~> check {
-        val response = entityAs[CrawlingResultResponse]
-        response shouldEqual 3
+        entityAs[CrawlingResultResponse] shouldEqual CrawlingResultResponse(ticketId, storage.getResult(ticketId).get)
       }
     }
 

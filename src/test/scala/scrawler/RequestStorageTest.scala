@@ -21,25 +21,25 @@ class RequestStorageTest extends FreeSpec{
     Uri("http://yandex.com"),
     Uri("http://google.com")
   )
+  val crawlId = rs.register(uris)
   "Storage" - {
-    "should return Id and then result by Id" in {
-
-      val crawlId = rs.register(uris)
-
-      for {
-        resultMap <- rs.getResult(crawlId)
-        (uri, result) <- resultMap
-      } println(s"$uri: $result")
-
-      Thread.sleep(10000)
-
-      for {
-        resultMap <- rs.getResult(crawlId)
-        (uri, result) <- resultMap
-      } println(s"$uri: $result")
-
-      //TODO finish this test
-
+    "should return Id " in {
+      assert(crawlId match {
+        case CrawlingId(id:Long) => true
+        case _ => false
+      })
     }
-  }
+
+    "should then result by Id" in {
+      Thread.sleep(5000)
+      val result = rs.getResult(crawlId)
+      assert( result match {
+          case None => false
+          case Some(seqRes) => !uris.zip(seqRes).exists{
+            case (a,(b,_)) => a != b
+          }
+        }
+      )
+      }
+    }
 }

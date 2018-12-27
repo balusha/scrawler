@@ -26,6 +26,9 @@ object JsonCodecs {
       case "error" => AttemptStatus.Error
     }
 
+    implicit val parsingErrorDecoder: Decoder[ParsingError.type] = (c: HCursor) => c.as[String] map {
+      _ => ParsingError
+    }
   }
 
   object Encoders {
@@ -55,14 +58,9 @@ object JsonCodecs {
       }).asJson
     }
 
-//    implicit val endpointErrorEncoder: Encoder[EndpointError] = Encoder.instance {
-//      case x: EndpointError.ParsingError => x.asJson
-//      case x: EndpointError.InternalServerError => x.asJson
-//    }
-
-//    implicit val a: Encoder[EndpointError.ParsingError] = deriveEncoder
-//    implicit val b: Encoder[EndpointError.InternalServerError] = deriveEncoder
-
+    implicit val parsingErrorEncoder: Encoder[ParsingError.type] = new Encoder[ParsingError.type] {
+      override def apply(a: ParsingError.type): Json = "parsing error".asJson
+    }
   }
 
 }

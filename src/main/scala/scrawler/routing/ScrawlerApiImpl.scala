@@ -6,7 +6,7 @@ import akka.http.scaladsl.server._
 import scrawler.http.JsonCodecs.Encoders._
 import scrawler.http.JsonCodecs.Decoders._
 import scrawler.http.{CrawlingResultResponse, EndpointError, NewCrawlingRequest}
-import scrawler.model.{CrawlingId, ResultsStorage}
+import scrawler.model.{CrawlingId, ParsingError, ResultsStorage}
 import io.circe.generic.auto._
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 
@@ -17,7 +17,7 @@ class ScrawlerApiImpl(
   private val rh = RejectionHandler.newBuilder()
     .handle {
       case rejection: MalformedRequestContentRejection =>
-        complete(BadRequest -> EndpointError.ParsingError(s"Incorrect input format."))
+        complete(BadRequest -> ParsingError)
       case rejection: ValidationRejection =>
         complete(BadRequest -> rejection)
     }.result()

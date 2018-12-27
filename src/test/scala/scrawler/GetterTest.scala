@@ -45,11 +45,11 @@ class GetterTest extends FreeSpec{
         assert(gotTitle == needTitle)
       }
 
-      "There is no head\\title tag from vk.com" in {
+      "Мобильная версия ВКонтакте from vk.com" in {
 
         val uri = Uri("http://vk.com")
         val gotTitle = Await.result(getter.getTitle(uri), 15 seconds).getOrElse("No way!")
-        val needTitle = "There is no head\\title tag"
+        val needTitle = "Мобильная версия ВКонтакте"
 
         assert(gotTitle == needTitle)
       }
