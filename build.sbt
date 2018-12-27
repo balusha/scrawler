@@ -4,7 +4,9 @@ version := "0.1"
 
 scalaVersion := "2.12.8"
 
-val circeVersion = "0.10.0"
+val circeVersion = "0.11.0"
+
+scalacOptions += "-feature"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http"   % "10.1.6",

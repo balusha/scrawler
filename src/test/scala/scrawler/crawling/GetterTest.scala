@@ -21,7 +21,7 @@ class GetterTest extends FreeSpec{
       "Akka from akka.io" in {
 
         val uri = Uri("https://akka.io")
-        val gotTitle = Await.result(getter.getTitle(uri), 15 seconds).getOrElse("No way!")
+        val gotTitle = Await.result(getter.getTitle(uri), 15.seconds).getOrElse("No way!")
         val needTitle = "Akka"
 
         assert(gotTitle == needTitle)
@@ -30,7 +30,7 @@ class GetterTest extends FreeSpec{
       "Google from google.com" in {
 
         val uri = Uri("http://google.com")
-        val gotTitle = Await.result(getter.getTitle(uri), 15 seconds).getOrElse("No way!")
+        val gotTitle = Await.result(getter.getTitle(uri), 15.seconds).getOrElse("No way!")
         val needTitle = "Google"
 
         assert(gotTitle == needTitle)
@@ -39,7 +39,7 @@ class GetterTest extends FreeSpec{
       "Yandex from yandex.ru" in {
 
         val uri = Uri("http://yandex.ru")
-        val gotTitle = Await.result(getter.getTitle(uri), 15 seconds).getOrElse("No way!")
+        val gotTitle = Await.result(getter.getTitle(uri), 15.seconds).getOrElse("No way!")
         val needTitle = "Яндекс"
 
         assert(gotTitle == needTitle)
@@ -48,7 +48,7 @@ class GetterTest extends FreeSpec{
       "Мобильная версия ВКонтакте from vk.com" in {
 
         val uri = Uri("http://vk.com")
-        val gotTitle = Await.result(getter.getTitle(uri), 15 seconds).getOrElse("No way!")
+        val gotTitle = Await.result(getter.getTitle(uri), 15.seconds).getOrElse("No way!")
         val needTitle = "Мобильная версия ВКонтакте"
 
         assert(gotTitle == needTitle)

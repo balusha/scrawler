@@ -3,6 +3,7 @@ package scrawler.http
 import akka.http.scaladsl.model.Uri
 import akka.stream.FlowMonitorState
 import scrawler.model.{CrawlingError, CrawlingId, NoSuchCrawlingRequest}
+import scala.language.implicitConversions
 
 //import scrawler.http.CrawlingResultResponse.CrawlingResult
 
@@ -45,9 +46,7 @@ case class CrawlingAttempt(url: Uri, result: CrawlingAttemptResult)
 object CrawlingAttempt {
 
   implicit def seqres2attempt(seqres: Seq[(Uri, Option[Either[CrawlingError, String]])]): Seq[CrawlingAttempt] = {
-    seqres.map {
-      res2attempt(_)
-    }
+    seqres.map { value => res2attempt(value)}
   }
 
   implicit def res2attempt(res: (Uri, Option[Either[CrawlingError, String]])): CrawlingAttempt = {
