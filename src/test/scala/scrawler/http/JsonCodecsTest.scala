@@ -1,4 +1,4 @@
-package scrawler.json
+package scrawler.http
 
 import akka.http.scaladsl.model.Uri
 import io.circe._
@@ -6,11 +6,9 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import org.scalatest.FreeSpec
-//import scrawler.http.EndpointError.ParsingError
-import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest, NewCrawlingResponse}
-import scrawler.model.{CrawlingId, ParsingError}
 import scrawler.http.JsonCodecs.Decoders._
 import scrawler.http.JsonCodecs.Encoders._
+import scrawler.model.{CrawlingId, ParsingError}
 
 class JsonCodecsTest extends FreeSpec{
 
@@ -31,7 +29,7 @@ class JsonCodecsTest extends FreeSpec{
             |}
           """.stripMargin
 
-        val value = new NewCrawlingRequest(
+        val value = NewCrawlingRequest(
           List(
             Uri("http://some.test.url"),
             Uri("http://another.test.url"),
@@ -55,7 +53,7 @@ class JsonCodecsTest extends FreeSpec{
             |	"id": 1234567890
             |}
           """.stripMargin
-        val value = new NewCrawlingResponse(CrawlingId(1234567890))
+        val value = NewCrawlingResponse(CrawlingId(1234567890))
 
         assert(
           parse(json).map(_.pretty(printer)) == Right(value.asJson.pretty(printer))
@@ -101,15 +99,12 @@ class JsonCodecsTest extends FreeSpec{
              |}
           """.stripMargin
 
-        val value = new CrawlingResultResponse(
-          new CrawlingId(123456),
-          Seq(
-            Uri("http://some.test.url")                   -> Some(Right("ololo")),
-            Uri("http://another.test.url")                -> Some(Left(ParsingError)),
-            Uri("https://ololo.pyshpysh.ru/popyachso/11") -> None
-          )
-        )
-
+        val value = CrawlingResultResponse( CrawlingId(123456),
+                                            Seq(
+                                              Uri("http://some.test.url")                   -> Some(Right("ololo")),
+                                              Uri("http://another.test.url")                -> Some(Left(ParsingError)),
+                                              Uri("https://ololo.pyshpysh.ru/popyachso/11") -> None
+                                            ))
         assert(
           parse(json).map(_.pretty(printer)) == Right(value.asJson.pretty(printer))
         )

@@ -1,29 +1,25 @@
-package scrawler
+package scrawler.model
 
-import scala.concurrent.duration._
 import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalatest.{Matchers, WordSpec}
-import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest}
-import scrawler.model.{CrawlingId, ResultsStorageImpl}
-import scrawler.routing.ScrawlerApiImpl
-import scrawler.http.JsonCodecs.Encoders._
-import scrawler.http.JsonCodecs.Decoders._
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
-
-import scala.concurrent.Await
+import org.scalatest.{Matchers, WordSpec}
+import scrawler.http.JsonCodecs.Decoders._
+import scrawler.http.JsonCodecs.Encoders._
+import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest}
+import scrawler.routing.ScrawlerApiImpl
 
 
 class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
   val storage = new ResultsStorageImpl()
   val scrApi = new ScrawlerApiImpl(storage)
-  val route = scrApi.route
+  val route: Route = scrApi.route
 
   "The scrawler" should {
     "return answer \"pong\" on GET \"ping\" request" in {
       Get(Uri("/ping")) ~> route ~> check {
         val response = entityAs[String]
-        println(s"Got response: $response")
         response shouldEqual "pong"
       }
     }

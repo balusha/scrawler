@@ -21,7 +21,7 @@ class RequestStorageTest extends FreeSpec{
     Uri("http://yandex.com"),
     Uri("http://google.com")
   )
-  val crawlId = rs.register(uris)
+  val crawlId: CrawlingId = rs.register(uris)
   "Storage" - {
     "should return Id " in {
       assert(crawlId match {
