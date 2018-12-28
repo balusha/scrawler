@@ -3,7 +3,8 @@ package scrawler.model
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.stream.Materializer
-import scrawler.crawling.GetterImpl
+
+import scrawler.crawling.Getter
 
 import scala.Option
 import scala.collection.concurrent.TrieMap
@@ -20,10 +21,9 @@ trait ResultsStorage {
 
 }
 
-class ResultsStorageImpl()
+class ResultsStorageImpl(getter: Getter)
                         (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) extends ResultsStorage {
 
-  private val getter = new GetterImpl
   private val storage = new TrieMap[CrawlingId, CrawlingResult]
 
   private val getNextId: () => CrawlingId = {

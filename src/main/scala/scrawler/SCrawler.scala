@@ -3,7 +3,7 @@ package scrawler
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-
+import scrawler.crawling.GetterImpl
 import scrawler.model.ResultsStorageImpl
 import scrawler.routing.ScrawlerApiImpl
 
@@ -12,11 +12,12 @@ import scala.util.{Failure, Success}
 
 object SCrawler extends App {
 
-  implicit val system: ActorSystem = ActorSystem("SCrawlerServer")
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
-  implicit val executionContext: ExecutionContext = system.dispatcher
+  implicit val webServerAS: ActorSystem = ActorSystem("SCrawlerServer")
+  implicit val webServerMaterializer: ActorMaterializer = ActorMaterializer() // not sure it`s neccessary
+  implicit val webServerEC: ExecutionContext = webServerAS.dispatcher
 
-  val storage     = new ResultsStorageImpl()
+  val getter      = new GetterImpl()
+  val storage     = new ResultsStorageImpl(getter)
   val scrawlerApi = new ScrawlerApiImpl(storage)
 
   Http()
@@ -28,8 +29,8 @@ object SCrawler extends App {
           println("Received shutdown hook")
           try {
             import scala.concurrent.duration._
-            Await.ready(binding.terminate(10 seconds), 15 seconds)
-            Await.ready(system.terminate(), 1 minute)
+            Await.ready(binding.terminate(10.seconds), 15.seconds)
+            Await.ready(webServerAS.terminate(), 1.minute)
           } catch {
             case err: Throwable =>
               println("Worker graceful shutdown failed", err)

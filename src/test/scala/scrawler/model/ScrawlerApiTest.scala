@@ -5,6 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpcirce.ErrorAccumulatingCirceSupport._
 import org.scalatest.{Matchers, WordSpec}
+import scrawler.crawling.GetterImpl
 import scrawler.http.JsonCodecs.Decoders._
 import scrawler.http.JsonCodecs.Encoders._
 import scrawler.http.{CrawlingResultResponse, NewCrawlingRequest}
@@ -12,7 +13,7 @@ import scrawler.routing.ScrawlerApiImpl
 
 
 class ScrawlerApiTest extends WordSpec with Matchers with ScalatestRouteTest {
-  val storage = new ResultsStorageImpl()
+  val storage = new ResultsStorageImpl(new GetterImpl())
   val scrApi = new ScrawlerApiImpl(storage)
   val route: Route = scrApi.route
 

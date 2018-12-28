@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
 import org.scalatest.FreeSpec
+import scrawler.crawling.GetterImpl
 
 import scala.concurrent.ExecutionContext
 
@@ -13,7 +14,7 @@ class RequestStorageTest extends FreeSpec{
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
-  val rs = new ResultsStorageImpl()
+  val rs = new ResultsStorageImpl(new GetterImpl())
 
   val uris = List(
     Uri("http://google.com"),

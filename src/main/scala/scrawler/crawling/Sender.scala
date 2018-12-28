@@ -1,27 +1,29 @@
 package scrawler.crawling
 
+import java.util.concurrent.Executors
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.Materializer
+import akka.stream.{ActorMaterializer, Materializer}
 import org.jsoup.Jsoup
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-
 import scrawler.model.ParsingError
 
 trait Getter {
-  def getTitle(uri: Uri)
-              (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer): Future[Either[ParsingError.type, String]]
+  def getTitle(uri: Uri): Future[Either[ParsingError.type, String]]
 }
 
-class GetterImpl()
-                (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) extends Getter {
+class GetterImpl() extends Getter {
 
-  def getTitle(uri: Uri)
-              (implicit as: ActorSystem, ec: ExecutionContext, mat: Materializer) = {
+  implicit val getterAS: ActorSystem = ActorSystem("GetterSystem")
+  implicit val getterMaterializer: ActorMaterializer = ActorMaterializer() // not sure it`s neccessary
+  implicit val getterEC: ExecutionContext = getterAS.dispatcher
+
+  def getTitle(uri: Uri): Future[Either[ParsingError.type, String]]  = {
     getResponseFromUri(uri).flatMap {
       case Left(err) => Future.successful(Left(err))
       case Right(response) => extractTitleFromResponse(response)
@@ -45,7 +47,7 @@ class GetterImpl()
       case resp@HttpResponse(StatusCodes.Redirection(_), headers, _, _) =>
         extractUriToRedirect(resp) match {
           case Left(err) => Future.successful(Left(err))
-          case Right(uri) => getResponseFromUri(uri)
+          case Right(url) => getResponseFromUri(url)
         }
       case resp => Future.successful(Right(resp))
     }
